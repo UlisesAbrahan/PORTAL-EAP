@@ -37,7 +37,13 @@ async function iniciar() {
   if (perfilActual.rol === "directivo" || perfilActual.rol === "administrador") {
     document.getElementById("btnAsignarArea").classList.remove("hidden");
     document.getElementById("btnAsignarArea").addEventListener("click", () => abrirModalArea());
+    document.getElementById("btnEditarAlumno").classList.remove("hidden");
+    document.getElementById("btnEditarAlumno").addEventListener("click", abrirModalEditarAlumno);
   }
+
+  document.getElementById("btnCerrarModalEditarAlumno").addEventListener("click", cerrarModalEditarAlumno);
+  document.getElementById("formEditarAlumno").addEventListener("submit", guardarEdicionAlumno);
+  document.getElementById("editNotificado").addEventListener("change", actualizarVisibilidadFechaNotificacion);
 
   configurarFormularioSeguimiento();
 
@@ -76,7 +82,7 @@ async function cargarFicha() {
   mostrarEstado(estado, "cargando", "Cargando información del alumno...");
   const { data, error } = await supabaseClient
     .from("alumnos")
-    .select("id, nombre, apellido, curso, division, turno, estado_seguimiento, observaciones_generales, alumno_areas ( id, estado, observaciones, areas ( id, nombre ) )")
+    .select("id, nombre, apellido, curso, division, turno, estado_seguimiento, observaciones_generales, notificado, fecha_notificacion, activo, alumno_areas ( id, estado, observaciones, areas ( id, nombre ) )")
     .eq("id", alumnoId)
     .single();
 
@@ -95,6 +101,17 @@ async function cargarFicha() {
   const badgeEstado = document.getElementById("fichaEstado");
   badgeEstado.textContent = data.estado_seguimiento;
   badgeEstado.className = `badge ${claseBadgeEstado(data.estado_seguimiento)}`;
+
+  const badgeNotificado = document.getElementById("fichaNotificado");
+  if (data.notificado) {
+    badgeNotificado.textContent = `Notificado${data.fecha_notificacion ? " · " + formatearFecha(data.fecha_notificacion) : ""}`;
+    badgeNotificado.classList.remove("hidden");
+  } else {
+    badgeNotificado.classList.add("hidden");
+  }
+
+  const areasActivas = (data.alumno_areas || []).filter(rel => rel.estado !== "Finalizado").length;
+  document.getElementById("fichaContadorAreas").textContent = `Áreas actualmente activas: ${areasActivas}`;
 
   const listaAreas = document.getElementById("listaAreasAlumno");
   if (!data.alumno_areas || data.alumno_areas.length === 0) {
@@ -353,6 +370,65 @@ async function guardarAsignacionArea(evento) {
   mostrarEstado(estado, "exito", "Área asignada correctamente.");
   await cargarFicha();
   setTimeout(cerrarModalArea, 700);
+}
+
+function abrirModalEditarAlumno() {
+  const form = document.getElementById("formEditarAlumno");
+  form.reset();
+  document.getElementById("editCurso").value = alumnoActual.curso;
+  document.getElementById("editDivision").value = alumnoActual.division;
+  document.getElementById("editTurno").value = alumnoActual.turno;
+  document.getElementById("editEstado").value = alumnoActual.estado_seguimiento;
+  document.getElementById("editObservaciones").value = alumnoActual.observaciones_generales || "";
+  document.getElementById("editNotificado").checked = !!alumnoActual.notificado;
+  document.getElementById("editFechaNotificacion").value = alumnoActual.fecha_notificacion || "";
+  document.getElementById("editActivo").checked = alumnoActual.activo !== false;
+  actualizarVisibilidadFechaNotificacion();
+  document.getElementById("modalEditarAlumno").classList.remove("hidden");
+}
+
+function cerrarModalEditarAlumno() {
+  document.getElementById("modalEditarAlumno").classList.add("hidden");
+}
+
+function actualizarVisibilidadFechaNotificacion() {
+  const marcado = document.getElementById("editNotificado").checked;
+  document.getElementById("campoFechaNotificacion").classList.toggle("hidden", !marcado);
+  if (!marcado) {
+    document.getElementById("editFechaNotificacion").value = "";
+  } else if (!document.getElementById("editFechaNotificacion").value) {
+    document.getElementById("editFechaNotificacion").value = hoyISO();
+  }
+}
+
+async function guardarEdicionAlumno(evento) {
+  evento.preventDefault();
+  const estado = document.getElementById("estadoModalEditarAlumno");
+  const boton = document.getElementById("btnGuardarEdicionAlumno");
+  boton.disabled = true;
+  mostrarEstado(estado, "cargando", "Guardando cambios...");
+
+  const notificado = document.getElementById("editNotificado").checked;
+  const registro = {
+    curso: document.getElementById("editCurso").value.trim(),
+    division: document.getElementById("editDivision").value.trim(),
+    turno: document.getElementById("editTurno").value,
+    estado_seguimiento: document.getElementById("editEstado").value,
+    observaciones_generales: document.getElementById("editObservaciones").value.trim(),
+    notificado: notificado,
+    fecha_notificacion: notificado ? (document.getElementById("editFechaNotificacion").value || hoyISO()) : null,
+    activo: document.getElementById("editActivo").checked
+  };
+
+  const { error } = await supabaseClient.from("alumnos").update(registro).eq("id", alumnoId);
+  boton.disabled = false;
+  if (error) {
+    mostrarEstado(estado, "error", "No se pudieron guardar los cambios del alumno.");
+    return;
+  }
+  mostrarEstado(estado, "exito", "Cambios guardados correctamente.");
+  await cargarFicha();
+  setTimeout(cerrarModalEditarAlumno, 700);
 }
 
 document.addEventListener("DOMContentLoaded", iniciar);

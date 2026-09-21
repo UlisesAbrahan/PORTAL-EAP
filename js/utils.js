@@ -25,8 +25,8 @@ export function claseBadgeEstado(estado) {
   const mapa = {
     "En seguimiento": "badge-seguimiento",
     "Necesita apoyo": "badge-apoyo",
-    "Seguimiento intensivo": "badge-intensivo",
-    "En proceso de mejora": "badge-mejora",
+    "Trayectoria en riesgo": "badge-riesgo",
+    "Trayectoria finalizada": "badge-finalizado",
     "Finalizado": "badge-finalizado",
     "Pendiente": "badge-pendiente"
   };

@@ -36,9 +36,14 @@
             Curso <span id="fichaCurso"></span> · División <span id="fichaDivision"></span> · Turno <span id="fichaTurno"></span>
           </p>
         </div>
-        <span class="badge" id="fichaEstado"></span>
+        <div>
+          <span class="badge" id="fichaEstado"></span>
+          <span class="badge badge-notificado hidden" id="fichaNotificado"></span>
+        </div>
       </div>
       <p><strong>Observaciones generales:</strong> <span id="fichaObservaciones"></span></p>
+      <p class="page-subtitle" id="fichaContadorAreas"></p>
+      <button class="btn btn-secundario btn-sm hidden" id="btnEditarAlumno">Editar alumno</button>
     </div>
 
     <div class="card">
@@ -123,6 +128,60 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="modalEditarAlumno">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Editar alumno</h3>
+      <button class="modal-close" id="btnCerrarModalEditarAlumno">×</button>
+    </div>
+    <div id="estadoModalEditarAlumno" class="hidden"></div>
+    <form id="formEditarAlumno">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editCurso">Curso</label>
+          <input class="form-control" type="text" id="editCurso" required>
+        </div>
+        <div class="form-group">
+          <label for="editDivision">División</label>
+          <input class="form-control" type="text" id="editDivision" required>
+        </div>
+        <div class="form-group">
+          <label for="editTurno">Turno</label>
+          <select class="form-control" id="editTurno" required>
+            <option value="Mañana">Mañana</option>
+            <option value="Tarde">Tarde</option>
+            <option value="Vespertino">Vespertino</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="editEstado">Estado de seguimiento</label>
+        <select class="form-control" id="editEstado" required>
+          <option value="En seguimiento">En seguimiento</option>
+          <option value="Necesita apoyo">Necesita apoyo</option>
+          <option value="Trayectoria en riesgo">Trayectoria en riesgo</option>
+          <option value="Trayectoria finalizada">Trayectoria finalizada</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="editObservaciones">Observaciones generales</label>
+        <textarea class="form-control" id="editObservaciones"></textarea>
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" id="editNotificado"> Se notificó a la familia mediante nota</label>
+      </div>
+      <div class="form-group" id="campoFechaNotificacion">
+        <label for="editFechaNotificacion">Fecha de la notificación</label>
+        <input class="form-control" type="date" id="editFechaNotificacion">
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" id="editActivo"> Alumno activo en el sistema</label>
+      </div>
+      <button class="btn btn-primary" id="btnGuardarEdicionAlumno" type="submit">Guardar cambios</button>
+    </form>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="modalArea">
   <div class="modal-box">
     <div class="modal-header">
@@ -140,7 +199,6 @@
         <select class="form-control" id="selectEstadoAsignacion" required>
           <option value="Pendiente">Pendiente</option>
           <option value="En seguimiento">En seguimiento</option>
-          <option value="En proceso de mejora">En proceso de mejora</option>
           <option value="Finalizado">Finalizado</option>
         </select>
       </div>

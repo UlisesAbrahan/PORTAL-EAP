@@ -307,10 +307,15 @@ tr:hover td {
 
 .badge-seguimiento { background: #e3f0fb; color: #1f5f8b; }
 .badge-apoyo { background: #fdeeea; color: var(--color-error); }
-.badge-intensivo { background: #fde7e7; color: #b23a3a; }
-.badge-mejora { background: #eaf7ef; color: var(--color-exito); }
-.badge-finalizado { background: #ececec; color: #555; }
+.badge-riesgo { background: #fde7e7; color: #b23a3a; }
+.badge-finalizado { background: #eaf7ef; color: var(--color-exito); }
 .badge-pendiente { background: #fff4e0; color: #a56a10; }
+
+.badge-notificado {
+  background: #eef0f5;
+  color: var(--color-primario-claro);
+  border: 1px solid var(--color-borde);
+}
 
 .novedad-item {
   border-bottom: 1px solid var(--color-borde);

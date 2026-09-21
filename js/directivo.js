@@ -38,7 +38,7 @@ async function cargarEstadisticas() {
   const docentes = docentesResp.data || [];
   const areas = areasResp.data || [];
 
-  const enSeguimiento = alumnos.filter(a => a.estado_seguimiento !== "Finalizado").length;
+  const enSeguimiento = alumnos.filter(a => a.estado_seguimiento !== "Trayectoria finalizada").length;
 
   document.getElementById("statAlumnosSeguimiento").textContent = enSeguimiento;
   document.getElementById("statIntervenciones").textContent = seguimientos.length;

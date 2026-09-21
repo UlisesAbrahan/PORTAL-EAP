@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Histórico de acompañamiento · Portal EAP</title>
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar-mobile">
+    <button id="btnMenuMovil">☰</button>
+    <span>Portal EAP</span>
+    <span></span>
+  </div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1>Portal de Seguimiento y Acompañamiento Pedagógico</h1>
+      <span id="sidebarNombre"></span><br>
+      <span id="sidebarRol"></span>
+    </div>
+    <ul class="nav-list" id="navList"></ul>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnCerrarSesion">Cerrar sesión</button>
+    </div>
+  </aside>
+  <main class="main-content" id="main">
+    <div class="section-heading">
+      <div>
+        <h2 class="page-title">Histórico de acompañamiento</h2>
+        <p class="page-subtitle">Combine filtros y exporte el resultado a Excel</p>
+      </div>
+      <button class="btn btn-acento" id="btnExportarExcel">Exportar a Excel</button>
+    </div>
+
+    <div class="card">
+      <form id="formFiltros">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="filtroAlumno">Alumno</label>
+            <input class="form-control" type="text" id="filtroAlumno">
+          </div>
+          <div class="form-group">
+            <label for="filtroCurso">Curso</label>
+            <input class="form-control" type="text" id="filtroCurso">
+          </div>
+          <div class="form-group">
+            <label for="filtroDivision">División</label>
+            <input class="form-control" type="text" id="filtroDivision">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="filtroArea">Área</label>
+            <select class="form-control" id="filtroArea"></select>
+          </div>
+          <div class="form-group">
+            <label for="filtroDocente">Docente</label>
+            <select class="form-control" id="filtroDocente"></select>
+          </div>
+          <div class="form-group">
+            <label for="filtroEstadoAlumno">Estado del alumno</label>
+            <select class="form-control" id="filtroEstadoAlumno">
+              <option value="">Todos</option>
+              <option value="En seguimiento">En seguimiento</option>
+              <option value="Necesita apoyo">Necesita apoyo</option>
+              <option value="Seguimiento intensivo">Seguimiento intensivo</option>
+              <option value="En proceso de mejora">En proceso de mejora</option>
+              <option value="Finalizado">Finalizado</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="filtroDesde">Fecha desde</label>
+            <input class="form-control" type="date" id="filtroDesde">
+          </div>
+          <div class="form-group">
+            <label for="filtroHasta">Fecha hasta</label>
+            <input class="form-control" type="date" id="filtroHasta">
+          </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Aplicar filtros</button>
+        <button class="btn btn-secundario" type="button" id="btnLimpiarFiltros">Limpiar</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <p class="page-subtitle" id="contadorResultados"></p>
+      <div id="estadoHistorico" class="hidden"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Alumno</th><th>Curso</th><th>Estado</th><th>Área</th><th>Docente</th><th>Fecha</th><th>Resultado</th></tr>
+          </thead>
+          <tbody id="tablaHistoricoBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<script type="module" src="js/historico.js"></script>
+</body>
+</html>

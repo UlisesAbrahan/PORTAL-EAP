@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administración · Portal EAP</title>
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar-mobile">
+    <button id="btnMenuMovil">☰</button>
+    <span>Portal EAP</span>
+    <span></span>
+  </div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1>Portal de Seguimiento y Acompañamiento Pedagógico</h1>
+      <span id="sidebarNombre"></span><br>
+      <span id="sidebarRol"></span>
+    </div>
+    <ul class="nav-list" id="navList"></ul>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnCerrarSesion">Cerrar sesión</button>
+    </div>
+  </aside>
+  <main class="main-content" id="main">
+    <h2 class="page-title">Administración del sistema</h2>
+    <p class="page-subtitle">Gestión de usuarios y áreas institucionales</p>
+
+    <div class="card">
+      <div class="section-heading">
+        <h2>Áreas</h2>
+        <button class="btn btn-secundario btn-sm" id="btnNuevaArea">Nueva área</button>
+      </div>
+      <div id="estadoAreasAdmin" class="hidden"></div>
+      <div id="listaAreasAdmin"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-heading">
+        <h2>Usuarios del sistema</h2>
+        <button class="btn btn-primary btn-sm" id="btnNuevoPerfil">Nuevo usuario</button>
+      </div>
+      <p class="page-subtitle">Antes de crear un usuario aquí, debe crearlo desde Supabase Authentication &gt; Users y copiar su UUID.</p>
+      <div id="estadoPerfilesAdmin" class="hidden"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Área</th><th>Estado</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="tablaPerfilesBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay hidden" id="modalPerfil">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="tituloModalPerfil">Nuevo usuario del sistema</h3>
+      <button class="modal-close" id="btnCerrarModalPerfil">×</button>
+    </div>
+    <div id="estadoModalPerfil" class="hidden"></div>
+    <form id="formPerfil">
+      <input type="hidden" id="perfilIdEditando">
+      <div class="form-group" id="campoIdAuth">
+        <label for="idAuthPerfil">UUID de Supabase Authentication</label>
+        <input class="form-control" type="text" id="idAuthPerfil">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nombrePerfil">Nombre</label>
+          <input class="form-control" type="text" id="nombrePerfil" required>
+        </div>
+        <div class="form-group">
+          <label for="apellidoPerfil">Apellido</label>
+          <input class="form-control" type="text" id="apellidoPerfil" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="emailPerfil">Email</label>
+        <input class="form-control" type="email" id="emailPerfil" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="selectRolPerfil">Rol</label>
+          <select class="form-control" id="selectRolPerfil" required>
+            <option value="profesor">Profesor</option>
+            <option value="directivo">Directivo</option>
+            <option value="administrador">Administrador</option>
+          </select>
+        </div>
+        <div class="form-group" id="campoAreaPerfil">
+          <label for="selectAreaPerfil">Área</label>
+          <select class="form-control" id="selectAreaPerfil"></select>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btnGuardarPerfil" type="submit">Guardar usuario</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modalAreaAdmin">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Nueva área</h3>
+      <button class="modal-close" id="btnCerrarModalAreaAdmin">×</button>
+    </div>
+    <div id="estadoModalAreaAdmin" class="hidden"></div>
+    <form id="formAreaAdmin">
+      <div class="form-group">
+        <label for="nombreNuevaArea">Nombre del área</label>
+        <input class="form-control" type="text" id="nombreNuevaArea" required>
+      </div>
+      <button class="btn btn-primary" type="submit">Crear área</button>
+    </form>
+  </div>
+</div>
+
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal de Seguimiento y Acompañamiento Pedagógico</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+<script type="module">
+import { supabaseClient } from "./js/config.js";
+supabaseClient.auth.getSession().then(({ data }) => {
+  if (data?.session) {
+    window.location.href = "dashboard.html";
+  } else {
+    window.location.href = "login.html";
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha del alumno · Portal EAP</title>
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar-mobile">
+    <button id="btnMenuMovil">☰</button>
+    <span>Portal EAP</span>
+    <span></span>
+  </div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1>Portal de Seguimiento y Acompañamiento Pedagógico</h1>
+      <span id="sidebarNombre"></span><br>
+      <span id="sidebarRol"></span>
+    </div>
+    <ul class="nav-list" id="navList"></ul>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnCerrarSesion">Cerrar sesión</button>
+    </div>
+  </aside>
+  <main class="main-content" id="main">
+    <div id="estadoFicha" class="hidden"></div>
+
+    <div class="card">
+      <div class="section-heading">
+        <div>
+          <h2 class="page-title" id="fichaNombre"></h2>
+          <p class="page-subtitle">
+            Curso <span id="fichaCurso"></span> · División <span id="fichaDivision"></span> · Turno <span id="fichaTurno"></span>
+          </p>
+        </div>
+        <span class="badge" id="fichaEstado"></span>
+      </div>
+      <p><strong>Observaciones generales:</strong> <span id="fichaObservaciones"></span></p>
+    </div>
+
+    <div class="card">
+      <div class="section-heading">
+        <h2>Áreas de acompañamiento</h2>
+        <button class="btn btn-secundario btn-sm hidden" id="btnAsignarArea">Asignar / actualizar área</button>
+      </div>
+      <div id="listaAreasAlumno"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-heading">
+        <h2>Historial de acompañamiento</h2>
+        <button class="btn btn-primary btn-sm" id="btnRegistrarSeguimiento">Registrar acompañamiento</button>
+      </div>
+      <div class="filters-bar">
+        <select class="form-control" id="filtroHistArea"></select>
+        <select class="form-control" id="filtroHistDocente"></select>
+        <label style="font-size:12px;color:var(--color-texto-suave)">Desde
+          <input class="form-control" type="date" id="filtroHistDesde">
+        </label>
+        <label style="font-size:12px;color:var(--color-texto-suave)">Hasta
+          <input class="form-control" type="date" id="filtroHistHasta">
+        </label>
+      </div>
+      <div id="estadoHistorial" class="hidden"></div>
+      <div id="estadoHistorialVacio" class="hidden"></div>
+      <div id="listaHistorial"></div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay hidden" id="modalSeguimiento">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="tituloModalSeguimiento">Registrar acompañamiento</h3>
+      <button class="modal-close" id="btnCerrarModalSeguimiento">×</button>
+    </div>
+    <div id="estadoModalSeguimiento" class="hidden"></div>
+    <form id="formSeguimiento">
+      <input type="hidden" id="seguimientoIdEditando">
+      <div class="form-row" id="campoAreaSeguimiento">
+        <div class="form-group">
+          <label for="selectAreaSeguimiento">Área</label>
+          <select class="form-control" id="selectAreaSeguimiento"></select>
+        </div>
+      </div>
+      <div class="form-row" id="campoDocenteSeguimiento">
+        <div class="form-group">
+          <label for="selectDocenteSeguimiento">Docente</label>
+          <select class="form-control" id="selectDocenteSeguimiento"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fecha">Fecha</label>
+          <input class="form-control" type="date" id="fecha" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="actividad">Actividad realizada</label>
+        <textarea class="form-control" id="actividad" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="objetivo">Objetivo del acompañamiento</label>
+        <textarea class="form-control" id="objetivo" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="metodologia">Metodología / estrategia utilizada</label>
+        <textarea class="form-control" id="metodologia" required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="observaciones">Observaciones</label>
+        <textarea class="form-control" id="observaciones"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="resultado">Resultado / evolución</label>
+        <textarea class="form-control" id="resultado"></textarea>
+      </div>
+      <button class="btn btn-primary" id="btnGuardarSeguimiento" type="submit">Guardar registro</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modalArea">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Asignar área de acompañamiento</h3>
+      <button class="modal-close" id="btnCerrarModalArea">×</button>
+    </div>
+    <div id="estadoModalArea" class="hidden"></div>
+    <form id="formArea">
+      <div class="form-group">
+        <label for="selectAreaAsignacion">Área</label>
+        <select class="form-control" id="selectAreaAsignacion" required></select>
+      </div>
+      <div class="form-group">
+        <label for="selectEstadoAsignacion">Estado</label>
+        <select class="form-control" id="selectEstadoAsignacion" required>
+          <option value="Pendiente">Pendiente</option>
+          <option value="En seguimiento">En seguimiento</option>
+          <option value="En proceso de mejora">En proceso de mejora</option>
+          <option value="Finalizado">Finalizado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="observacionesAsignacion">Observaciones</label>
+        <textarea class="form-control" id="observacionesAsignacion"></textarea>
+      </div>
+      <button class="btn btn-primary" id="btnGuardarArea" type="submit">Guardar asignación</button>
+    </form>
+  </div>
+</div>
+
+<script type="module" src="js/alumno.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inicio · Portal EAP</title>
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar-mobile">
+    <button id="btnMenuMovil">☰</button>
+    <span>Portal EAP</span>
+    <span></span>
+  </div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1>Portal de Seguimiento y Acompañamiento Pedagógico</h1>
+      <span id="sidebarNombre"></span><br>
+      <span id="sidebarRol"></span>
+    </div>
+    <ul class="nav-list" id="navList"></ul>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="btnCerrarSesion">Cerrar sesión</button>
+    </div>
+  </aside>
+  <main class="main-content" id="main">
+    <h2 class="page-title">Hola, <span id="saludoNombre"></span></h2>
+    <p class="page-subtitle">Rol: <span id="saludoRol"></span> · Área: <span id="saludoArea"></span></p>
+
+    <div class="card">
+      <div class="section-heading">
+        <h2>Últimas novedades</h2>
+      </div>
+      <div id="estadoNovedades" class="hidden"></div>
+      <div id="listaNovedades"></div>
+    </div>
+  </main>
+</div>
+<script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

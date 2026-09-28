@@ -6,7 +6,6 @@
 <title>Histórico de acompañamiento · Portal EAP</title>
 <link rel="stylesheet" href="css/styles.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="app-shell">
@@ -30,9 +29,9 @@
     <div class="section-heading">
       <div>
         <h2 class="page-title">Histórico de acompañamiento</h2>
-  
+        <p class="page-subtitle">Combine filtros y descargue el resultado como documento Word</p>
       </div>
-      <button class="btn btn-acento" id="btnExportarExcel">Exportar a Excel</button>
+      <button class="btn btn-acento" id="btnExportarWord">Descargar informe (Word)</button>
     </div>
 
     <div class="card">
@@ -100,6 +99,7 @@
     </div>
   </main>
 </div>
+<script src="js/vendor/docx.iife.js"></script>
 <script type="module" src="js/historico.js"></script>
 </body>
 </html>

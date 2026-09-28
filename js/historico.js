@@ -1,6 +1,8 @@
 import { supabaseClient } from "./config.js";
-import { requerirSesion } from "./auth.js";
-import { escapeHtml, formatearFecha, claseBadgeEstado, mostrarEstado, ocultarEstado, activarMenuMovil } from "./utils.js";
+import { requerirSesion, etiquetaRol } from "./auth.js";
+import { NOMBRE_INSTITUCION } from "./config.js";
+import { construirInformeWord } from "./informe.js";
+import { escapeHtml, formatearFecha, claseBadgeEstado, mostrarEstado, ocultarEstado, activarMenuMovil, descargarBlob, hoyISO } from "./utils.js";
 
 let perfilActual = null;
 let registrosCache = [];
@@ -26,7 +28,7 @@ async function iniciar() {
     document.getElementById("formFiltros").reset();
     buscarHistorico();
   });
-  document.getElementById("btnExportarExcel").addEventListener("click", exportarExcel);
+  document.getElementById("btnExportarWord").addEventListener("click", exportarWord);
 }
 
 async function cargarFiltrosIniciales() {
@@ -113,60 +115,62 @@ function renderizarTabla(lista) {
   }).join("");
 }
 
-function exportarExcel() {
+function textoSeleccionado(idSelect) {
+  const select = document.getElementById(idSelect);
+  if (!select.value) return "";
+  return select.options[select.selectedIndex].text;
+}
+
+async function exportarWord() {
   if (registrosCache.length === 0) {
     window.alert("No hay registros para exportar con los filtros actuales.");
     return;
   }
+  const boton = document.getElementById("btnExportarWord");
+  boton.disabled = true;
+  try {
+    const desde = document.getElementById("filtroDesde").value;
+    const hasta = document.getElementById("filtroHasta").value;
+    const filtros = [];
+    const campos = [
+      ["Alumno", document.getElementById("filtroAlumno").value.trim()],
+      ["Curso", document.getElementById("filtroCurso").value.trim()],
+      ["División", document.getElementById("filtroDivision").value.trim()],
+      ["Área", textoSeleccionado("filtroArea")],
+      ["Docente", textoSeleccionado("filtroDocente")],
+      ["Estado del alumno", textoSeleccionado("filtroEstadoAlumno")],
+      ["Fecha desde", desde ? formatearFecha(desde) : ""],
+      ["Fecha hasta", hasta ? formatearFecha(hasta) : ""]
+    ];
+    campos.forEach(([etiqueta, valor]) => {
+      if (valor) filtros.push([etiqueta, valor]);
+    });
 
-  const filas = registrosCache.map(registro => ({
-    Alumno: `${registro.alumnos.apellido}, ${registro.alumnos.nombre}`,
-    Curso: registro.alumnos.curso,
-    "División": registro.alumnos.division,
-    Turno: registro.alumnos.turno,
-    Estado: registro.alumnos.estado_seguimiento,
-    "Área": registro.areas?.nombre || "",
-    Docente: registro.perfiles ? `${registro.perfiles.apellido}, ${registro.perfiles.nombre}` : "",
-    Fecha: formatearFecha(registro.fecha),
-    Actividad: registro.actividad,
-    Objetivo: registro.objetivo,
-    "Metodología": registro.metodologia,
-    Observaciones: registro.observaciones || "",
-    "Resultado/Evolución": registro.resultado || ""
-  }));
-
-  const hojaDatos = XLSX.utils.json_to_sheet(filas);
-
-  const alumnosUnicos = new Set(registrosCache.map(r => r.alumnos.id));
-  const intervencionesPorArea = {};
-  const intervencionesPorDocente = {};
-  registrosCache.forEach(registro => {
-    const area = registro.areas?.nombre || "Sin área";
-    const docente = registro.perfiles ? `${registro.perfiles.apellido}, ${registro.perfiles.nombre}` : "Sin docente";
-    intervencionesPorArea[area] = (intervencionesPorArea[area] || 0) + 1;
-    intervencionesPorDocente[docente] = (intervencionesPorDocente[docente] || 0) + 1;
-  });
-
-  const filasResumen = [
-    { Indicador: "Cantidad de alumnos", Valor: alumnosUnicos.size },
-    { Indicador: "Cantidad de intervenciones", Valor: registrosCache.length },
-    {},
-    { Indicador: "Intervenciones por área", Valor: "" },
-    ...Object.entries(intervencionesPorArea).map(([nombre, total]) => ({ Indicador: nombre, Valor: total })),
-    {},
-    { Indicador: "Intervenciones por docente", Valor: "" },
-    ...Object.entries(intervencionesPorDocente).map(([nombre, total]) => ({ Indicador: nombre, Valor: total }))
-  ];
-  const hojaResumen = XLSX.utils.json_to_sheet(filasResumen, { skipHeader: false });
-
-  const libro = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(libro, hojaDatos, "Histórico");
-  XLSX.utils.book_append_sheet(libro, hojaResumen, "Resumen");
-
-  const desde = document.getElementById("filtroDesde").value || "inicio";
-  const hasta = document.getElementById("filtroHasta").value || "actual";
-  const nombreArchivo = `historico_acompanamiento_${desde}_${hasta}.xlsx`;
-  XLSX.writeFile(libro, nombreArchivo);
+    const documento = construirInformeWord(window.docx, {
+      institucion: NOMBRE_INSTITUCION,
+      titulo: "Histórico de acompañamiento pedagógico",
+      filtros: filtros,
+      generadoPor: `${perfilActual.nombre} ${perfilActual.apellido} (${etiquetaRol(perfilActual.rol)})`,
+      fechaEmision: formatearFecha(hoyISO()),
+      registros: registrosCache.map(registro => ({
+        alumno: registro.alumnos,
+        area: registro.areas?.nombre || "",
+        docente: registro.perfiles ? `${registro.perfiles.apellido}, ${registro.perfiles.nombre}` : "",
+        fecha: registro.fecha,
+        actividad: registro.actividad,
+        objetivo: registro.objetivo,
+        metodologia: registro.metodologia,
+        observaciones: registro.observaciones,
+        resultado: registro.resultado
+      }))
+    });
+    const blob = await window.docx.Packer.toBlob(documento);
+    descargarBlob(blob, `historico_acompanamiento_${desde || "inicio"}_${hasta || "actual"}.docx`);
+  } catch (error) {
+    window.alert("No se pudo generar el documento Word.");
+  } finally {
+    boton.disabled = false;
+  }
 }
 
 document.addEventListener("DOMContentLoaded", iniciar);

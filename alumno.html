@@ -57,8 +57,12 @@
     <div class="card">
       <div class="section-heading">
         <h2>Historial de acompañamiento</h2>
-        <button class="btn btn-primary btn-sm" id="btnRegistrarSeguimiento">Registrar acompañamiento</button>
+        <div>
+          <button class="btn btn-secundario btn-sm" id="btnDescargarWord">Descargar historial (Word)</button>
+          <button class="btn btn-primary btn-sm" id="btnRegistrarSeguimiento">Registrar acompañamiento</button>
+        </div>
       </div>
+      <div id="avisoRegistro" class="estado-msg estado-vacio hidden"></div>
       <div class="filters-bar">
         <select class="form-control" id="filtroHistArea"></select>
         <select class="form-control" id="filtroHistDocente"></select>
@@ -211,6 +215,7 @@
   </div>
 </div>
 
+<script src="js/vendor/docx.iife.js"></script>
 <script type="module" src="js/alumno.js"></script>
 </body>
 </html>

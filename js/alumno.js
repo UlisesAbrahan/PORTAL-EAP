@@ -1,6 +1,9 @@
 import { supabaseClient } from "./config.js";
-import { requerirSesion } from "./auth.js";
+import { requerirSesion, etiquetaRol } from "./auth.js";
+import { NOMBRE_INSTITUCION } from "./config.js";
+import { construirInformeWord } from "./informe.js";
 import {
+  descargarBlob,
   escapeHtml,
   formatearFecha,
   formatearFechaHora,
@@ -32,6 +35,7 @@ async function iniciar() {
 
   await cargarAreas();
   await cargarFicha();
+  aplicarPermisoRegistro();
   await cargarHistorial();
 
   if (perfilActual.rol === "directivo" || perfilActual.rol === "administrador") {
@@ -48,6 +52,7 @@ async function iniciar() {
   configurarFormularioSeguimiento();
 
   document.getElementById("btnRegistrarSeguimiento").addEventListener("click", abrirModalSeguimiento);
+  document.getElementById("btnDescargarWord").addEventListener("click", descargarHistorialWord);
   document.getElementById("btnCerrarModalSeguimiento").addEventListener("click", cerrarModalSeguimiento);
   document.getElementById("btnCerrarModalArea").addEventListener("click", cerrarModalArea);
   document.getElementById("formArea").addEventListener("submit", guardarAsignacionArea);
@@ -127,6 +132,27 @@ async function cargarFicha() {
   }
 }
 
+function profesorPuedeRegistrar() {
+  if (perfilActual.rol !== "profesor") return true;
+  if (!alumnoActual) return false;
+  return (alumnoActual.alumno_areas || []).some(
+    rel => rel.areas?.id === perfilActual.area_id && rel.estado !== "Finalizado"
+  );
+}
+
+function aplicarPermisoRegistro() {
+  const boton = document.getElementById("btnRegistrarSeguimiento");
+  const aviso = document.getElementById("avisoRegistro");
+  if (profesorPuedeRegistrar()) {
+    boton.classList.remove("hidden");
+    aviso.classList.add("hidden");
+    return;
+  }
+  boton.classList.add("hidden");
+  aviso.textContent = "Este alumno no tiene asignada tu área con acompañamiento activo, por lo que no podés registrar acompañamientos. Si corresponde, pedile al equipo directivo que le asigne tu área.";
+  aviso.classList.remove("hidden");
+}
+
 async function cargarHistorial() {
   const estado = document.getElementById("estadoHistorial");
   mostrarEstado(estado, "cargando", "Cargando historial de acompañamiento...");
@@ -158,19 +184,76 @@ async function cargarHistorial() {
   renderizarHistorial();
 }
 
-function renderizarHistorial() {
+function obtenerHistorialFiltrado() {
   const area = document.getElementById("filtroHistArea").value;
   const docente = document.getElementById("filtroHistDocente").value;
   const desde = document.getElementById("filtroHistDesde").value;
   const hasta = document.getElementById("filtroHistHasta").value;
 
-  const filtrados = seguimientosCache.filter(registro => {
+  return seguimientosCache.filter(registro => {
     if (area && registro.area_id !== area) return false;
     if (docente && registro.docente_id !== docente) return false;
     if (desde && registro.fecha < desde) return false;
     if (hasta && registro.fecha > hasta) return false;
     return true;
   });
+}
+
+function textoSeleccionado(idSelect) {
+  const select = document.getElementById(idSelect);
+  if (!select.value) return "";
+  return select.options[select.selectedIndex].text;
+}
+
+async function descargarHistorialWord() {
+  const registros = obtenerHistorialFiltrado();
+  if (registros.length === 0) {
+    window.alert("No hay registros para incluir en el documento con los filtros actuales.");
+    return;
+  }
+  const boton = document.getElementById("btnDescargarWord");
+  boton.disabled = true;
+  try {
+    const filtros = [];
+    const area = textoSeleccionado("filtroHistArea");
+    const docente = textoSeleccionado("filtroHistDocente");
+    const desde = document.getElementById("filtroHistDesde").value;
+    const hasta = document.getElementById("filtroHistHasta").value;
+    if (area) filtros.push(["Área", area]);
+    if (docente) filtros.push(["Docente", docente]);
+    if (desde) filtros.push(["Fecha desde", formatearFecha(desde)]);
+    if (hasta) filtros.push(["Fecha hasta", formatearFecha(hasta)]);
+
+    const documento = construirInformeWord(window.docx, {
+      institucion: NOMBRE_INSTITUCION,
+      titulo: "Historial de acompañamiento pedagógico",
+      filtros: filtros,
+      generadoPor: `${perfilActual.nombre} ${perfilActual.apellido} (${etiquetaRol(perfilActual.rol)})`,
+      fechaEmision: formatearFecha(hoyISO()),
+      registros: registros.map(registro => ({
+        alumno: alumnoActual,
+        area: registro.areas?.nombre || "",
+        docente: registro.perfiles ? `${registro.perfiles.apellido}, ${registro.perfiles.nombre}` : "",
+        fecha: registro.fecha,
+        actividad: registro.actividad,
+        objetivo: registro.objetivo,
+        metodologia: registro.metodologia,
+        observaciones: registro.observaciones,
+        resultado: registro.resultado
+      }))
+    });
+    const blob = await window.docx.Packer.toBlob(documento);
+    const nombreLimpio = `${alumnoActual.apellido}_${alumnoActual.nombre}`.replace(/\s+/g, "_");
+    descargarBlob(blob, `historial_${nombreLimpio}_${hoyISO()}.docx`);
+  } catch (error) {
+    window.alert("No se pudo generar el documento Word.");
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+function renderizarHistorial() {
+  const filtrados = obtenerHistorialFiltrado();
 
   const contenedor = document.getElementById("listaHistorial");
   const estadoVacio = document.getElementById("estadoHistorialVacio");
@@ -236,6 +319,7 @@ function configurarFormularioSeguimiento() {
 }
 
 function abrirModalSeguimiento(idExistente) {
+  if (typeof idExistente !== "string" && !profesorPuedeRegistrar()) return;
   const modal = document.getElementById("modalSeguimiento");
   const form = document.getElementById("formSeguimiento");
   form.reset();
@@ -369,6 +453,7 @@ async function guardarAsignacionArea(evento) {
   }
   mostrarEstado(estado, "exito", "Área asignada correctamente.");
   await cargarFicha();
+  aplicarPermisoRegistro();
   setTimeout(cerrarModalArea, 700);
 }
 
